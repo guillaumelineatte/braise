@@ -1,0 +1,53 @@
+# cp .env.example .env  (au minimum SECRET_KEY, ADMIN_EMAIL et ADMIN_PASSWORD)
+# docker compose up --build
+# -> http://localhost:8080 et http://localhost:8080/admin
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: braise
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-braise}
+      POSTGRES_DB: braise
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U braise -d braise"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://braise:${POSTGRES_PASSWORD:-braise}@postgres:5432/braise
+      MEDIA_ROOT: /data/media
+      MEDIA_URL: /media
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:8080}
+      SITE_URL: ${SITE_URL:-http://localhost:8080}
+      SEED_ON_START: ${SEED_ON_START:-true}
+    volumes:
+      - media:/data/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  front:
+    build: ./frontend
+    ports:
+      - "${FRONT_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  media:
