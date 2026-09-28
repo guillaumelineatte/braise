@@ -1,0 +1,93 @@
+/* Tokens (voir DESIGN.md), mêmes valeurs que design/prototype.html.
+   Aussi appliqués sur [data-theme] pour pouvoir afficher les deux thèmes côte à côte. */
+
+:root,
+[data-theme="light"] {
+  --bg: #f6f1e8;
+  --surface: #efe8db;
+  --surface-2: #e8dfce;
+  --ink: #1c1714;
+  --ink-2: #5a514a;
+  --ink-3: #8a7f75;
+  --accent: #b4552d;
+  --accent-hover: #9a4724;
+  --accent-text: #9a4724;
+  --ocre: #c9a24a;
+  --olive: #6f7a4b;
+  --danger: #a1362b;
+  --line: rgba(28, 23, 20, 0.1);
+  --line-strong: rgba(28, 23, 20, 0.22);
+  --photo-a: #d9c9ae;
+  --photo-b: #b99f7c;
+  --photo-c: #8b7455;
+  --photo-d: #5e4b36;
+  --shadow: 0 24px 64px -32px rgba(28, 23, 20, 0.35);
+  --grain-blend: multiply;
+  --grain-opacity: 0.035;
+  color-scheme: light;
+}
+
+:root {
+  --cream: #f6f1e8; /* texte sur photo, pareil dans les deux thèmes */
+  --serif: "Fraunces Variable", "Fraunces", Georgia, "Times New Roman", serif;
+  --sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-1: 300ms;
+  --t-2: 500ms;
+  --t-3: 700ms;
+  --gutter: 24px;
+  --max: 1440px;
+  --nav-h: 64px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171412;
+    --surface: #1f1b18;
+    --surface-2: #28231f;
+    --ink: #ede6da;
+    --ink-2: #a89e92;
+    --ink-3: #77706a;
+    --accent: #d07a52;
+    --accent-hover: #e08b63;
+    --accent-text: #d07a52;
+    --ocre: #d2ad5a;
+    --olive: #8a9560;
+    --danger: #e0806f;
+    --line: rgba(237, 230, 218, 0.1);
+    --line-strong: rgba(237, 230, 218, 0.22);
+    --photo-a: #4a3f35;
+    --photo-b: #3a312a;
+    --photo-c: #2c251f;
+    --photo-d: #1f1a16;
+    --shadow: 0 24px 64px -32px rgba(0, 0, 0, 0.7);
+    --grain-blend: screen;
+    --grain-opacity: 0.05;
+    color-scheme: dark;
+  }
+}
+
+[data-theme="dark"] {
+  --bg: #171412;
+  --surface: #1f1b18;
+  --surface-2: #28231f;
+  --ink: #ede6da;
+  --ink-2: #a89e92;
+  --ink-3: #77706a;
+  --accent: #d07a52;
+  --accent-hover: #e08b63;
+  --accent-text: #d07a52;
+  --ocre: #d2ad5a;
+  --olive: #8a9560;
+  --danger: #e0806f;
+  --line: rgba(237, 230, 218, 0.1);
+  --line-strong: rgba(237, 230, 218, 0.22);
+  --photo-a: #4a3f35;
+  --photo-b: #3a312a;
+  --photo-c: #2c251f;
+  --photo-d: #1f1a16;
+  --shadow: 0 24px 64px -32px rgba(0, 0, 0, 0.7);
+  --grain-blend: screen;
+  --grain-opacity: 0.05;
+  color-scheme: dark;
+}

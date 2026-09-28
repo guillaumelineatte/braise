@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Braise — recettes que l'on prend le temps de faire</title>
+    <meta name="description" content="Braise rassemble des recettes que l'on prend le temps de faire. Des gestes justes, expliqués une fois pour toutes." />
+    <meta name="theme-color" content="#F6F1E8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#171412" media="(prefers-color-scheme: dark)" />
+    <meta property="og:site_name" content="Braise" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Braise" />
+    <meta property="og:locale" content="fr_FR" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // appliqué tout de suite pour éviter un flash blanc en mode sombre
+      try {
+        var t = localStorage.getItem("braise-theme");
+        if (t === "dark" || t === "light") document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+    <script>
+      // On lance les appels API de la page (et l'image principale) sans attendre que le JS soit chargé.
+      // C'est surtout ça qui fait tenir le score Lighthouse sur mobile.
+      (function () {
+        var api = "__API_BASE__" + "/api";
+        var chunks = __ROUTE_CHUNKS__;
+        var path = location.pathname.replace(/\/+$/, "") || "/";
+        var painted;
+        window.__BRAISE_SHELL__ = new Promise(function (resolve) { painted = resolve; });
+        var store = (window.__BRAISE_PREFETCH__ = {});
+        var ready = (window.__BRAISE_DATA__ = {});
+        function get(url) {
+          var p = fetch(url, { headers: { Accept: "application/json" } }).then(function (r) {
+            if (!r.ok) throw new Error(String(r.status));
+            return r.json();
+          });
+          p.then(function (data) { ready[url] = data; }, function () {});
+          store[url] = p;
+          return p;
+        }
+        function link(attrs) {
+          var l = document.createElement("link");
+          for (var k in attrs) l.setAttribute(k, attrs[k]);
+          document.head.appendChild(l);
+        }
+        function image(img, sizes) {
+          if (img && img.srcset) link({ rel: "preload", as: "image", imagesrcset: img.srcset, imagesizes: sizes, fetchpriority: "high" });
+        }
+        function el(tag, attrs, children) {
+          var node = document.createElement(tag);
+          for (var k in attrs) node.setAttribute(k, attrs[k]);
+          (children || []).forEach(function (child) { node.appendChild(typeof child === "string" ? document.createTextNode(child) : child); });
+          return node;
+        }
+        // Version statique du haut de page (nav + photo) affichée avant React, dans #shell.
+        // Mêmes classes que les composants, sinon ça saute au remplacement : à garder synchro !
+        // PublicLayout la supprime dans un useLayoutEffect.
+        function shell(img, sizes, wrap) {
+          var root = document.getElementById("shell");
+          var app = document.getElementById("root");
+          if (!root || !app || app.hasChildNodes() || root.hasChildNodes() || !img || !img.srcset) return painted();
+          var mark = el("a", { href: "/", class: "wordmark", "aria-label": "Braise, accueil" }, ["Bra", el("i", {}, ["i"]), "se"]);
+          var links = el("nav", { class: "nav-links", "aria-label": "Navigation principale" }, [
+            el("a", { href: "/recettes", class: "u" }, ["Recettes"]),
+            el("a", { href: "/#categories", class: "u nav-secondary" }, ["Catégories"]),
+            el("a", { href: "/a-propos", class: "u nav-secondary" }, ["À propos"]),
+            el("span", { class: "theme", "aria-hidden": "true" }),
+          ]);
+          var picture = el("img", { src: img.url, srcset: img.srcset, sizes: sizes, width: img.width, height: img.height, alt: "", decoding: "sync", fetchpriority: "high", class: "is-loaded" });
+          whenPainted(picture);
+          var photo = el("div", { class: "photo has-img", style: "--lqip:url(" + JSON.stringify(img.lqip) + ")" }, [picture]);
+          root.appendChild(el("header", { class: "nav" }, [el("div", { class: "wrap" }, [mark, links])]));
+          root.appendChild(el("main", {}, [wrap(photo)]));
+        }
+        // React ne démarre qu'une fois l'image affichée (via l'API LCP si dispo, sinon juste après le load)
+        function whenPainted(img) {
+          var finished = false;
+          function finish() { if (!finished) { finished = true; painted(); } }
+          try {
+            new PerformanceObserver(function (list) {
+              list.getEntries().forEach(function (entry) { if (entry.element === img) finish(); });
+            }).observe({ type: "largest-contentful-paint", buffered: true });
+          } catch (e) {}
+          img.addEventListener("load", function () {
+            requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(finish, 150); }); });
+          });
+          img.addEventListener("error", finish);
+        }
+        function whenBody(fn) {
+          if (document.body) fn();
+          else document.addEventListener("DOMContentLoaded", fn, { once: true });
+        }
+        function code(page) {
+          (chunks[page] || []).forEach(function (href) { link({ rel: "modulepreload", href: href }); });
+        }
+        // l'API en premier : c'est elle qui donne l'URL de l'image
+        if (path === "/") {
+          get(api + "/recipes/featured").catch(painted).then(function (r) {
+            if (!r) return;
+            image(r.image, "100vw");
+            whenBody(function () {
+              shell(r.image, "100vw", function (photo) {
+                return el("section", { class: "hero" }, [photo, el("div", { class: "hero-scrim" })]);
+              });
+            });
+          });
+          get(api + "/recipes?page_size=12");
+          get(api + "/categories");
+          code("Home");
+        } else if (path === "/recettes") {
+          painted();
+          if (!location.search) get(api + "/recipes?page_size=12");
+          get(api + "/categories");
+          code("RecipeList");
+        } else {
+          var m = path.match(/^\/recettes\/([a-z0-9-]+)$/);
+          if (!m) painted();
+          if (m) {
+            get(api + "/recipes/" + m[1]).catch(painted).then(function (r) {
+              if (!r) return;
+              var sizes = "(min-width: 840px) 58vw, 100vw";
+              image(r.image, sizes);
+              whenBody(function () {
+                shell(r.image, sizes, function (photo) {
+                  var head = el("div", { class: "recipe-head" }, [photo, el("div", { class: "text" })]);
+                  return el("div", { class: "wrap", style: "padding-top:clamp(40px, 5vw, 72px)" }, [el("article", { class: "recipe" }, [head])]);
+                });
+              });
+            });
+            code("RecipePage");
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="shell"></div>
+    <div id="root"></div>
+    <noscript><p style="padding:24px">Braise a besoin de JavaScript pour afficher les recettes.</p></noscript>
+    <script type="module" src="/src/boot.ts"></script>
+  </body>
+</html>
