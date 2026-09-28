@@ -1,0 +1,22 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+backend/media/
+backend/*.db
+backend/*.db-*
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Environnement
+.env
+backend/.env
+
+*.egg-info/
+
+# Système
+.DS_Store

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Braise — prototype du design system</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- Tokens ---------- */
+:root{
+  --bg:#F6F1E8; --surface:#EFE8DB; --surface-2:#E8DFCE;
+  --ink:#1C1714; --ink-2:#5A514A; --ink-3:#8A7F75;
+  --accent:#B4552D; --accent-hover:#9A4724;
+  --ocre:#C9A24A; --olive:#6F7A4B;
+  --line:rgba(28,23,20,.10); --line-strong:rgba(28,23,20,.22);
+  --photo-a:#D9C9AE; --photo-b:#B99F7C; --photo-c:#8B7455; --photo-d:#5E4B36;
+  --shadow:0 24px 64px -32px rgba(28,23,20,.35);
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --t-1:300ms; --t-2:500ms; --t-3:700ms;
+  --gutter:24px; --max:1440px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#171412; --surface:#1F1B18; --surface-2:#28231F;
+    --ink:#EDE6DA; --ink-2:#A89E92; --ink-3:#77706A;
+    --accent:#D07A52; --accent-hover:#E08B63;
+    --ocre:#D2AD5A; --olive:#8A9560;
+    --line:rgba(237,230,218,.10); --line-strong:rgba(237,230,218,.22);
+    --photo-a:#4A3F35; --photo-b:#3A312A; --photo-c:#2C251F; --photo-d:#1F1A16;
+    --shadow:0 24px 64px -32px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171412; --surface:#1F1B18; --surface-2:#28231F;
+  --ink:#EDE6DA; --ink-2:#A89E92; --ink-3:#77706A;
+  --accent:#D07A52; --accent-hover:#E08B63;
+  --ocre:#D2AD5A; --olive:#8A9560;
+  --line:rgba(237,230,218,.10); --line-strong:rgba(237,230,218,.22);
+  --photo-a:#4A3F35; --photo-b:#3A312A; --photo-c:#2C251F; --photo-d:#1F1A16;
+  --shadow:0 24px 64px -32px rgba(0,0,0,.7);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:17px; line-height:1.6;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  transition:background-color 400ms var(--ease), color 400ms var(--ease);
+  overflow-x:hidden;
+}
+/* grain */
+body::after{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:9000;
+  opacity:.035; mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+:root[data-theme="dark"] body::after{mix-blend-mode:screen;opacity:.05}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) body::after{mix-blend-mode:screen;opacity:.05} }
+
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+img{max-width:100%}
+:focus-visible{outline:1.5px solid var(--accent);outline-offset:4px;border-radius:2px}
+
+/* ---------- Type ---------- */
+.serif{font-family:var(--serif);font-variation-settings:"opsz" 144,"SOFT" 40,"WONK" 1;font-weight:400;letter-spacing:-.03em;line-height:.95}
+.display{font-size:clamp(54px,8vw,128px)}
+.h1{font-size:clamp(43px,5vw,68px)}
+.h2{font-size:clamp(34px,3.6vw,54px)}
+.h3{font-size:27px;letter-spacing:-.02em;line-height:1.05}
+.h4{font-size:21px;letter-spacing:-.015em;line-height:1.15}
+.lede{font-family:var(--serif);font-style:italic;font-variation-settings:"opsz" 30,"SOFT" 60;font-weight:300;font-size:21px;line-height:1.4;color:var(--ink-2);letter-spacing:-.005em}
+.label{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:500;line-height:1}
+.meta{font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.tnum{font-variant-numeric:tabular-nums}
+.small{font-size:14px}
+.diet-mark{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:inherit}
+.diet-mark::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--olive)}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:var(--max);margin:0 auto;padding:0 clamp(20px,4vw,72px)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter)}
+.hairline{border-top:1px solid var(--line)}
+section{padding:clamp(72px,10vw,160px) 0}
+
+/* links with drawn underline */
+.u{position:relative;display:inline-block}
+.u::after{content:"";position:absolute;left:0;bottom:-2px;height:1px;width:100%;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform var(--t-2) var(--ease)}
+.u:hover::after,.u:focus-visible::after{transform:scaleX(1);transform-origin:left}
+
+/* ---------- Photo placeholders ---------- */
+.photo{position:relative;overflow:hidden;background:var(--photo-b);border-radius:4px;isolation:isolate}
+.photo::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 30% 20%,var(--photo-a) 0%,var(--photo-b) 45%,var(--photo-c) 80%,var(--photo-d) 100%);transform:scale(1);transition:transform var(--t-3) var(--ease)}
+.photo.--b::before{background:radial-gradient(110% 100% at 70% 80%,var(--photo-a) 0%,var(--photo-c) 60%,var(--photo-d) 100%)}
+.photo.--c::before{background:radial-gradient(90% 90% at 50% 40%,var(--photo-b) 0%,var(--photo-c) 55%,var(--photo-d) 100%)}
+.photo.--d::before{background:radial-gradient(130% 80% at 20% 70%,var(--photo-a) 0%,var(--photo-b) 50%,var(--photo-d) 100%)}
+.photo::after{content:attr(data-caption);position:absolute;left:16px;bottom:14px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55);z-index:1}
+a:hover .photo::before,.photo:hover::before{transform:scale(1.03)}
+/* image reveal */
+.reveal-img{clip-path:inset(0 0 100% 0);transition:clip-path var(--t-3) var(--ease)}
+.reveal-img.is-in{clip-path:inset(0 0 0 0)}
+/* text mask reveal */
+.mask{display:block;overflow:hidden;padding-bottom:.08em;margin-bottom:-.08em}
+.mask>span{display:block;transform:translateY(112%);transition:transform var(--t-3) var(--ease)}
+.is-in .mask>span,.mask.is-in>span{transform:translateY(0)}
+.fade{opacity:0;transform:translateY(8px);transition:opacity var(--t-2) var(--ease),transform var(--t-2) var(--ease)}
+.is-in .fade,.fade.is-in{opacity:1;transform:none}
+
+/* ---------- Nav ---------- */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:100;backdrop-filter:blur(8px);background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.wordmark{font-family:var(--serif);font-variation-settings:"opsz" 144,"SOFT" 40,"WONK" 1;font-size:26px;letter-spacing:-.04em;line-height:1}
+.wordmark i{font-style:normal;color:var(--accent)}
+.nav-links{display:flex;gap:28px;align-items:center;font-size:14px}
+.nav-links a{color:var(--ink-2)}
+.nav-links a:hover{color:var(--ink)}
+.theme{width:28px;height:28px;border-radius:50%;border:1px solid var(--line-strong);position:relative;display:grid;place-items:center}
+.theme::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--ink);transition:transform var(--t-2) var(--ease),background var(--t-2)}
+.theme:hover::before{transform:scale(1.25)}
+@media (max-width:720px){.nav-links a{display:none}}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;height:calc(100svh - 64px);min-height:560px;padding:0}
+.hero .photo{position:absolute;inset:0;border-radius:0}
+.hero .photo::before{background:radial-gradient(110% 100% at 65% 35%,var(--photo-a) 0%,var(--photo-b) 40%,var(--photo-c) 75%,var(--photo-d) 100%)}
+.hero .photo::after{display:none}
+.hero-scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,14,10,.55) 0%,rgba(20,14,10,.15) 45%,transparent 70%)}
+.hero .wrap{position:relative;height:100%;display:flex;align-items:flex-end;padding-bottom:clamp(32px,5vw,72px)}
+.hero-inner{display:grid;grid-template-columns:1fr auto;gap:32px;width:100%;align-items:end;color:#F6F1E8}
+.hero .label{color:rgba(246,241,232,.75)}
+.hero .display{margin:.5em 0 .35em;max-width:14ch}
+.hero .meta{color:rgba(246,241,232,.8);font-size:15px}
+.hero .meta span+span::before{content:"";display:inline-block;width:20px;height:1px;background:currentColor;opacity:.5;margin:0 12px;vertical-align:middle}
+.hero-cta{font-size:15px;color:#F6F1E8;padding-bottom:4px;border-bottom:1px solid rgba(246,241,232,.5);white-space:nowrap}
+.hero-cta:hover{border-color:#F6F1E8}
+@media (max-width:720px){.hero-inner{grid-template-columns:1fr}}
+
+/* ---------- Sélection ---------- */
+.sel-head{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter);align-items:end;margin-bottom:clamp(40px,5vw,72px)}
+.sel-head .h2{grid-column:1/8;font-style:italic;font-weight:300}
+.sel-head p{grid-column:9/13;color:var(--ink-2);font-size:15px;margin:0}
+.sel{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter)}
+.sel .big{grid-column:1/8}
+.sel .big .photo{aspect-ratio:4/5}
+.sel .side{grid-column:8/13;display:grid;gap:clamp(32px,4vw,64px);align-content:start;padding-top:clamp(64px,10vw,160px)}
+.sel .side .photo{aspect-ratio:4/3}
+.card .label{margin:20px 0 10px}
+.card .h3,.card .h1{margin:0 0 8px}
+.card .meta{display:block}
+@media (max-width:840px){.sel .big,.sel .side{grid-column:1/13}.sel .side{padding-top:0}.sel-head .h2,.sel-head p{grid-column:1/13}}
+
+/* ---------- Catégories ---------- */
+.cats{padding-top:0}
+.cat{display:flex;align-items:baseline;justify-content:space-between;padding:clamp(18px,2.4vw,32px) 0;border-top:1px solid var(--line);position:relative;transition:padding-left var(--t-2) var(--ease)}
+.cat:last-child{border-bottom:1px solid var(--line)}
+.cat .name{font-family:var(--serif);font-variation-settings:"opsz" 144,"SOFT" 40,"WONK" 1;font-size:clamp(34px,5.4vw,86px);letter-spacing:-.03em;line-height:1;position:relative;z-index:1;transition:font-style 0s}
+.cat .counts{display:flex;flex-direction:column;align-items:flex-end;gap:6px;position:relative;z-index:1}
+.cat .count{font-variant-numeric:tabular-nums;color:var(--ink-3);font-size:15px}
+.cat .diet{display:inline-flex;align-items:baseline;gap:8px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+.cat .diet::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--olive);align-self:center}
+.cat .diet .tnum{letter-spacing:0;font-size:13px}
+.cat .diet:hover{color:var(--olive)}
+.cat .swatch{position:absolute;right:0;top:50%;height:70%;aspect-ratio:3/2;translate:0 -50%;border-radius:4px;opacity:0;transform:translateX(24px);transition:opacity var(--t-2) var(--ease),transform var(--t-2) var(--ease);z-index:0;pointer-events:none}
+.cat:hover{padding-left:clamp(12px,2vw,32px)}
+.cat:hover .name{font-style:italic;font-weight:300}
+.cat:hover .swatch{opacity:.9;transform:none}
+.cat:hover .count{color:var(--ink)}
+.cat .name:hover{color:var(--ink)}
+
+/* ---------- Divider label between screens ---------- */
+.screen-mark{display:flex;align-items:center;gap:16px;color:var(--ink-3);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;padding:24px 0}
+.screen-mark::before,.screen-mark::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* ---------- Recette ---------- */
+.recipe-head{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter);align-items:end}
+.recipe-head .photo{grid-column:1/8;aspect-ratio:5/4}
+.recipe-head .text{grid-column:8/13;padding-bottom:8px}
+.recipe-head .h1{margin:12px 0 20px;max-width:12ch}
+.recipe-head .lede{margin:0 0 32px}
+.metas{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);padding-top:16px;gap:16px}
+.metas .label{margin-bottom:8px}
+.metas .val{font-size:17px;font-variant-numeric:tabular-nums}
+@media (max-width:840px){.recipe-head .photo,.recipe-head .text{grid-column:1/13}.recipe-head .text{padding-top:32px}}
+
+.recipe-body{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter);margin-top:clamp(56px,7vw,112px)}
+.ingredients{grid-column:1/5;position:sticky;top:96px;align-self:start}
+.steps{grid-column:6/13;max-width:640px}
+@media (max-width:840px){.ingredients{grid-column:1/13;position:static}.steps{grid-column:1/13}}
+
+.serv{display:flex;align-items:center;justify-content:space-between;padding:0 0 16px;border-bottom:1px solid var(--line)}
+.serv .h4{margin:0;font-family:var(--serif);font-variation-settings:"opsz" 40,"SOFT" 40}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:2px}
+.stepper button{width:36px;height:36px;display:grid;place-items:center;color:var(--ink-2);transition:color var(--t-1),background var(--t-1)}
+.stepper button:hover{color:var(--ink);background:var(--surface)}
+.stepper .n{width:44px;text-align:center;font-variant-numeric:tabular-nums;font-size:15px;border-left:1px solid var(--line);border-right:1px solid var(--line);height:36px;line-height:36px}
+.ing{list-style:none;margin:0;padding:0}
+.ing li{display:grid;grid-template-columns:72px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:16px;align-items:baseline}
+.ing .q{font-variant-numeric:tabular-nums;color:var(--ink);display:inline-block;overflow:hidden;vertical-align:bottom}
+.ing .q span{display:inline-block}
+.ing .q.roll span{animation:roll var(--t-2) var(--ease)}
+.ing .unit{color:var(--ink-3);font-size:14px;margin-left:3px}
+@keyframes roll{0%{transform:translateY(-100%);opacity:0}100%{transform:none;opacity:1}}
+
+.nutri{margin-top:40px;padding:24px;background:var(--surface);border-radius:4px;transition:background 400ms var(--ease)}
+.nutri .kcal{font-family:var(--serif);font-variation-settings:"opsz" 144,"SOFT" 40;font-size:54px;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.nutri .kcal small{font-family:var(--sans);font-size:14px;color:var(--ink-2);letter-spacing:0;margin-left:6px}
+.nutri .row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.nutri .row .label{margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.nutri .row .val{font-variant-numeric:tabular-nums;font-size:17px}
+.bar{display:flex;height:6px;gap:2px;margin-top:20px;border-radius:2px;overflow:hidden}
+.bar span{display:block;height:100%;transition:width var(--t-3) var(--ease)}
+.cook{margin-top:20px;font-size:14px;color:var(--ink-2);display:inline-flex;gap:10px;align-items:center}
+.cook::before{content:"";width:8px;height:8px;border:1px solid currentColor;border-radius:50%}
+
+.step{display:grid;grid-template-columns:72px 1fr 28px;gap:16px;padding:clamp(24px,3vw,40px) 0;border-bottom:1px solid var(--line);align-items:start}
+.step:first-child{border-top:1px solid var(--line)}
+.step .num{font-family:var(--serif);font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 60;font-weight:300;font-size:clamp(43px,4.5vw,68px);line-height:.85;color:var(--ink-3);letter-spacing:-.03em;transition:color var(--t-2)}
+.step p{margin:0;font-size:21px;line-height:1.55;letter-spacing:-.005em;transition:color var(--t-2)}
+.check{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-strong);position:relative;margin-top:8px;transition:border-color var(--t-1)}
+.check::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--accent);transform:scale(0);transition:transform var(--t-2) var(--ease)}
+.check:hover{border-color:var(--accent)}
+.step.done .check::after{transform:scale(1)}
+.step.done .check{border-color:var(--accent)}
+.step.done p{color:var(--ink-3)}
+.step.done .num{color:var(--line-strong)}
+@media (max-width:600px){.step{grid-template-columns:48px 1fr 28px}.step p{font-size:18px}}
+
+/* ---------- Admin excerpt ---------- */
+.admin{background:var(--surface);transition:background 400ms var(--ease)}
+.admin-panel{background:var(--bg);border:1px solid var(--line);border-radius:4px;overflow:hidden;transition:background 400ms var(--ease)}
+.admin-top{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--line);gap:16px;flex-wrap:wrap}
+.admin-top .title{font-family:var(--serif);font-variation-settings:"opsz" 40,"SOFT" 40;font-size:21px;letter-spacing:-.02em}
+.admin-top .saved{font-size:13px;color:var(--ink-3)}
+.btn{display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:2px;font-size:14px;font-weight:500;border:1px solid var(--line-strong);transition:background var(--t-1),color var(--t-1),border-color var(--t-1)}
+.btn:hover{background:var(--surface)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.primary:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.admin-body{padding:24px;display:grid;gap:24px}
+.field{display:grid;gap:8px}
+.field .label{color:var(--ink-3)}
+.input{height:40px;border:0;border-bottom:1px solid var(--line-strong);background:transparent;font:inherit;font-size:15px;color:var(--ink);padding:0;border-radius:0;outline:none;transition:border-color var(--t-1)}
+.input:focus{border-color:var(--accent)}
+.ingrow{display:grid;grid-template-columns:20px 1fr 96px 200px 28px;gap:16px;align-items:end}
+.handle{color:var(--ink-3);height:40px;display:grid;place-items:center;cursor:grab}
+.remove{color:var(--ink-3);height:40px;display:grid;place-items:center}
+.remove:hover{color:var(--accent)}
+@media (max-width:720px){.ingrow{grid-template-columns:20px 1fr 28px}.ingrow .field:nth-child(3),.ingrow .field:nth-child(4){grid-column:2/3}}
+/* toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:24px;max-width:520px}
+.toggle-row .desc{font-size:13px;color:var(--ink-3);margin:4px 0 0}
+.toggle{width:40px;height:22px;border:1px solid var(--line-strong);border-radius:11px;position:relative;flex:none;transition:border-color var(--t-2),background var(--t-2)}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--ink-3);transition:transform var(--t-2) var(--ease),background var(--t-2)}
+.toggle[aria-checked="true"]{border-color:var(--olive);background:color-mix(in srgb,var(--olive) 18%,transparent)}
+.toggle[aria-checked="true"]::after{transform:translateX(18px);background:var(--olive)}
+/* custom select */
+.select{position:relative}
+.select-btn{height:40px;width:100%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line-strong);font-size:15px;text-align:left;transition:border-color var(--t-1)}
+.select-btn::after{content:"";width:7px;height:7px;border-right:1px solid var(--ink-2);border-bottom:1px solid var(--ink-2);transform:rotate(45deg) translateY(-2px);transition:transform var(--t-2) var(--ease)}
+.select[aria-expanded="true"] .select-btn{border-color:var(--accent)}
+.select[aria-expanded="true"] .select-btn::after{transform:rotate(225deg) translateY(-2px)}
+.select-list{position:absolute;left:0;right:0;top:calc(100% + 8px);background:var(--bg);border:1px solid var(--line);border-radius:4px;box-shadow:var(--shadow);padding:6px;list-style:none;margin:0;z-index:20;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity var(--t-1) var(--ease),transform var(--t-2) var(--ease)}
+.select[aria-expanded="true"] .select-list{opacity:1;transform:none;pointer-events:auto}
+.select-list li{padding:9px 12px;font-size:14px;border-radius:2px;cursor:pointer;display:flex;justify-content:space-between;color:var(--ink-2)}
+.select-list li:hover{background:var(--surface);color:var(--ink)}
+.select-list li[aria-selected="true"]{color:var(--ink)}
+.select-list li[aria-selected="true"]::after{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);align-self:center}
+.select-list li small{color:var(--ink-3)}
+/* nutrition warning */
+.nut-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media (max-width:720px){.nut-grid{grid-template-columns:repeat(2,1fr)}}
+.warn{display:flex;gap:12px;align-items:baseline;font-size:14px;color:var(--ink-2);padding:12px 0 0;border-top:1px solid var(--line)}
+.warn::before{content:"";width:16px;height:1px;background:var(--accent);align-self:center;flex:none}
+.warn button{color:var(--accent);margin-left:auto;font-size:14px;white-space:nowrap}
+.warn button:hover{color:var(--accent-hover)}
+
+/* ---------- Footer ---------- */
+footer{padding:clamp(64px,8vw,120px) 0 0;border-top:1px solid var(--line);overflow:hidden}
+.foot-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gutter);padding-bottom:clamp(48px,6vw,96px)}
+.foot-grid .col{grid-column:span 3;font-size:14px;display:grid;gap:8px;align-content:start;color:var(--ink-2)}
+.foot-grid .col a:hover{color:var(--ink)}
+.foot-grid .about{grid-column:1/6;grid-row:1;color:var(--ink-2);font-size:15px;max-width:38ch}
+.foot-grid .col:nth-child(2){grid-column:7/10}.foot-grid .col:nth-child(3){grid-column:10/13}
+@media (max-width:720px){.foot-grid .about,.foot-grid .col:nth-child(2),.foot-grid .col:nth-child(3){grid-column:1/13}}
+.giant{font-family:var(--serif);font-variation-settings:"opsz" 144,"SOFT" 40,"WONK" 1;font-size:clamp(120px,28vw,420px);letter-spacing:-.05em;line-height:.72;margin:0;translate:-.03em .18em;color:var(--ink);opacity:.92}
+.giant i{font-style:normal;color:var(--accent)}
+.colophon{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);padding:16px 0 24px;border-top:1px solid var(--line)}
+
+/* ---------- Cursor ---------- */
+.cursor{display:none}
+@media (pointer:fine){
+  .cursor{display:block;position:fixed;left:0;top:0;width:8px;height:8px;border-radius:50%;background:var(--ink);pointer-events:none;z-index:9999;translate:-50% -50%;transition:width var(--t-1) var(--ease),height var(--t-1) var(--ease),opacity var(--t-1),background var(--t-2);mix-blend-mode:difference;background:#fff}
+  .cursor.big{width:40px;height:40px}
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:150ms!important;animation-duration:1ms!important}
+  .mask>span{transform:none}
+  .reveal-img{clip-path:none}
+  .fade{transform:none}
+  html{scroll-behavior:auto}
+  .cursor{display:none}
+}
+</style>
+</head>
+<body>
+<div class="cursor" aria-hidden="true"></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a href="#" class="wordmark" aria-label="Braise, accueil">Bra<i>i</i>se</a>
+    <nav class="nav-links" aria-label="Navigation principale">
+      <a href="#liste" class="u">Recettes</a>
+      <a href="#cats" class="u">Catégories</a>
+      <a href="#" class="u">À propos</a>
+      <button class="theme" id="theme" aria-label="Basculer le mode sombre"></button>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== Accueil : hero ===== -->
+<section class="hero is-in" id="hero">
+  <div class="photo" aria-hidden="true"></div>
+  <div class="hero-scrim" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="hero-inner">
+      <div>
+        <p class="label mask" style="transition-delay:.15s"><span>Recette de la semaine</span></p>
+        <h1 class="serif display">
+          <span class="mask" style="transition-delay:.25s"><span>Bouillon de</span></span>
+          <span class="mask" style="transition-delay:.33s"><span>champignons</span></span>
+          <span class="mask" style="transition-delay:.41s"><span>et sarrasin grillé</span></span>
+        </h1>
+        <p class="meta fade" style="transition-delay:.6s"><span>Entrées</span><span>50 min</span><span>4 portions</span><span>310 kcal</span><span class="diet-mark">Diététique</span></p>
+      </div>
+      <a href="#recette" class="hero-cta fade" style="transition-delay:.7s">Voir la recette</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Accueil : sélection ===== -->
+<section id="liste">
+  <div class="wrap">
+    <div class="sel-head">
+      <h2 class="serif h2">Ce que nous cuisinons en ce moment</h2>
+      <p>Une sélection courte, renouvelée chaque mois. Des recettes que l'on refait, pas que l'on essaie.</p>
+    </div>
+    <div class="sel">
+      <a href="#recette" class="card big">
+        <div class="photo reveal-img" data-caption="Photographie"></div>
+        <p class="label">Pâtisserie</p>
+        <h3 class="serif h1">Tarte aux figues et miel de châtaignier</h3>
+        <span class="meta">1 h 20 — 8 parts</span>
+      </a>
+      <div class="side">
+        <a href="#recette" class="card">
+          <div class="photo --b reveal-img" data-caption="Photographie"></div>
+          <p class="label">Plats</p>
+          <h3 class="serif h3">Risotto au potimarron, sauge frite</h3>
+          <span class="meta">45 min — 4 portions — <span class="diet-mark">Diététique</span></span>
+        </a>
+        <a href="#recette" class="card">
+          <div class="photo --c reveal-img" data-caption="Photographie"></div>
+          <p class="label">Pains</p>
+          <h3 class="serif h3">Pain au levain de seigle</h3>
+          <span class="meta">24 h — 1 miche</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Accueil : catégories ===== -->
+<section class="cats" id="cats">
+  <div class="wrap">
+    <div class="cat"><a class="name" href="#">Entrées</a><span class="counts"><a class="count" href="#">18 recettes</a><a class="diet" href="#">Diététique<span class="tnum">6</span></a></span><span class="swatch photo --d" aria-hidden="true"></span></div>
+    <div class="cat"><a class="name" href="#">Plats</a><span class="counts"><a class="count" href="#">42 recettes</a><a class="diet" href="#">Diététique<span class="tnum">14</span></a></span><span class="swatch photo" aria-hidden="true"></span></div>
+    <div class="cat"><a class="name" href="#">Pâtisserie</a><span class="counts"><a class="count" href="#">27 recettes</a><a class="diet" href="#">Diététique<span class="tnum">5</span></a></span><span class="swatch photo --b" aria-hidden="true"></span></div>
+    <div class="cat"><a class="name" href="#">Pains</a><span class="counts"><a class="count" href="#">9 recettes</a><a class="diet" href="#">Diététique<span class="tnum">3</span></a></span><span class="swatch photo --c" aria-hidden="true"></span></div>
+    <div class="cat"><a class="name" href="#">Apéritif</a><span class="counts"><a class="count" href="#">15 recettes</a><a class="diet" href="#">Diététique<span class="tnum">7</span></a></span><span class="swatch photo --d" aria-hidden="true"></span></div>
+  </section>
+
+<div class="wrap"><div class="screen-mark">Écran suivant — page recette</div></div>
+
+<!-- ===== Page recette ===== -->
+<section id="recette" style="padding-top:clamp(40px,5vw,72px)">
+  <div class="wrap">
+    <div class="recipe-head">
+      <div class="photo reveal-img" data-caption="Photographie pleine largeur"></div>
+      <div class="text">
+        <p class="label">Plats</p>
+        <h1 class="serif h1">Poulet rôti au citron confit et aux olives</h1>
+        <p class="lede">Une volaille entière, une heure de four, et le jus qui fait tout. On la sert au plat, avec du pain pour saucer.</p>
+        <div class="metas">
+          <div><p class="label">Préparation</p><div class="val">1 h 30</div></div>
+          <div><p class="label">Portions</p><div class="val" id="metaServ">4</div></div>
+          <div><p class="label">Par portion</p><div class="val">512 kcal</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="recipe-body">
+      <aside class="ingredients">
+        <div class="serv">
+          <h2 class="h4">Ingrédients</h2>
+          <div class="stepper" role="group" aria-label="Nombre de portions">
+            <button id="minus" aria-label="Moins de portions">−</button>
+            <span class="n" id="servN">4</span>
+            <button id="plus" aria-label="Plus de portions">+</button>
+          </div>
+        </div>
+        <ul class="ing" id="ing">
+          <li><span class="q" data-base="1.6" data-unit="kg"><span>1,6</span></span><span>Poulet fermier</span></li>
+          <li><span class="q" data-base="2" data-unit=""><span>2</span></span><span>Citrons confits</span></li>
+          <li><span class="q" data-base="120" data-unit="g"><span>120</span></span><span>Olives vertes dénoyautées</span></li>
+          <li><span class="q" data-base="4" data-unit=""><span>4</span></span><span>Gousses d'ail en chemise</span></li>
+          <li><span class="q" data-base="3" data-unit="c. à s."><span>3</span></span><span>Huile d'olive</span></li>
+          <li><span class="q" data-base="30" data-unit="g"><span>30</span></span><span>Beurre demi-sel</span></li>
+          <li><span class="q" data-base="200" data-unit="ml"><span>200</span></span><span>Bouillon de volaille</span></li>
+          <li><span class="q" data-base="1" data-unit="pincée"><span>1</span></span><span>Thym séché</span></li>
+        </ul>
+
+        <div class="nutri" aria-label="Valeurs nutritionnelles par portion">
+          <div class="kcal">512<small>kcal par portion</small></div>
+          <div class="row">
+            <div><p class="label"><span class="dot" style="background:var(--accent)"></span>Protéines</p><div class="val">42 g</div></div>
+            <div><p class="label"><span class="dot" style="background:var(--ocre)"></span>Glucides</p><div class="val">14 g</div></div>
+            <div><p class="label"><span class="dot" style="background:var(--olive)"></span>Lipides</p><div class="val">32 g</div></div>
+          </div>
+          <div class="bar" aria-hidden="true">
+            <span style="width:32.8%;background:var(--accent)"></span>
+            <span style="width:10.9%;background:var(--ocre)"></span>
+            <span style="width:56.3%;background:var(--olive)"></span>
+          </div>
+        </div>
+        <button class="cook u">Passer en mode cuisine</button>
+      </aside>
+
+      <div class="steps" id="steps">
+        <div class="step"><span class="num">1</span><p>Sortez le poulet une heure avant. Séchez la peau avec soin, salez-la généreusement et laissez-la reposer à l'air : c'est ce qui la rendra craquante.</p><button class="check" aria-label="Marquer l'étape 1 comme faite"></button></div>
+        <div class="step"><span class="num">2</span><p>Préchauffez le four à 220 °C. Coupez les citrons confits en quartiers, retirez la pulpe et taillez l'écorce en lanières fines.</p><button class="check" aria-label="Marquer l'étape 2 comme faite"></button></div>
+        <div class="step"><span class="num">3</span><p>Glissez le beurre et la moitié des lanières de citron sous la peau des blancs. Frottez l'ensemble d'huile, disposez l'ail et le thym dans le plat.</p><button class="check" aria-label="Marquer l'étape 3 comme faite"></button></div>
+        <div class="step"><span class="num">4</span><p>Enfournez 20 minutes, puis baissez à 180 °C. Ajoutez le bouillon, les olives et le reste de citron. Poursuivez 55 minutes en arrosant deux fois.</p><button class="check" aria-label="Marquer l'étape 4 comme faite"></button></div>
+        <div class="step"><span class="num">5</span><p>Laissez reposer un quart d'heure hors du four, couvert lâchement. Découpez au plat et nappez du jus, sans le dégraisser entièrement.</p><button class="check" aria-label="Marquer l'étape 5 comme faite"></button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="screen-mark">Écran suivant — administration, éditeur de recette</div></div>
+
+<!-- ===== Admin ===== -->
+<section class="admin">
+  <div class="wrap">
+    <div class="admin-panel">
+      <div class="admin-top">
+        <div>
+          <div class="title">Poulet rôti au citron confit et aux olives</div>
+          <div class="saved">Enregistré il y a 12 s — brouillon</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn">Aperçu</button>
+          <button class="btn primary">Publier</button>
+        </div>
+      </div>
+      <div class="admin-body">
+        <div class="toggle-row">
+          <div>
+            <span class="label" id="diet-label">Diététique</span>
+            <p class="desc">Affiche la recette dans l'option Diététique de sa catégorie.</p>
+          </div>
+          <button class="toggle" role="switch" aria-checked="false" aria-labelledby="diet-label" id="dietToggle"></button>
+        </div>
+
+        <div class="hairline"></div>
+
+        <div class="ingrow">
+          <div class="handle" aria-hidden="true">⋮⋮</div>
+          <div class="field"><label class="label" for="in-name">Ingrédient</label><input class="input" id="in-name" value="Olives vertes dénoyautées"></div>
+          <div class="field"><label class="label" for="in-q">Quantité</label><input class="input tnum" id="in-q" value="120" inputmode="decimal"></div>
+          <div class="field">
+            <span class="label" id="unit-label">Unité</span>
+            <div class="select" id="unitSelect" aria-expanded="false">
+              <button class="select-btn" aria-haspopup="listbox" aria-labelledby="unit-label" id="unitBtn"><span id="unitValue">g</span></button>
+              <ul class="select-list" role="listbox" id="unitList">
+                <li role="option" data-v="unité(s)">unité(s)</li>
+                <li role="option" data-v="g" aria-selected="true">g <small>gramme</small></li>
+                <li role="option" data-v="kg">kg <small>kilogramme</small></li>
+                <li role="option" data-v="ml">ml <small>millilitre</small></li>
+                <li role="option" data-v="L">L <small>litre</small></li>
+                <li role="option" data-v="c. à soupe">c. à soupe</li>
+                <li role="option" data-v="c. à café">c. à café</li>
+                <li role="option" data-v="pincée">pincée</li>
+              </ul>
+            </div>
+          </div>
+          <button class="remove" aria-label="Retirer cet ingrédient">×</button>
+        </div>
+
+        <div class="hairline"></div>
+
+        <div>
+          <p class="label" style="margin:0 0 16px">Valeurs nutritionnelles par portion</p>
+          <div class="nut-grid">
+            <div class="field"><label class="label" for="n1">Calories (kcal)</label><input class="input tnum" id="n1" value="610"></div>
+            <div class="field"><label class="label" for="n2">Protéines (g)</label><input class="input tnum" id="n2" value="42"></div>
+            <div class="field"><label class="label" for="n3">Glucides (g)</label><input class="input tnum" id="n3" value="14"></div>
+            <div class="field"><label class="label" for="n4">Lipides (g)</label><input class="input tnum" id="n4" value="32"></div>
+          </div>
+          <div class="warn" id="warn" style="margin-top:16px">
+            <span id="warnText">Les macros donnent 512 kcal, soit 16 % de moins que la valeur saisie.</span>
+            <button id="fix">Corriger à 512</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <p class="about">Braise rassemble des recettes que l'on prend le temps de faire. Pas de tendances, pas de raccourcis — des gestes justes, expliqués une fois pour toutes.</p>
+      <div class="col"><a href="#" class="u">Recettes</a><a href="#" class="u">Catégories</a><a href="#" class="u">À propos</a></div>
+      <div class="col"><a href="#" class="u">Lettre mensuelle</a><a href="#" class="u">Instagram</a><a href="#" class="u">Contact</a></div>
+    </div>
+    <p class="giant" aria-hidden="true">Bra<i>i</i>se</p>
+    <div class="colophon"><span>© 2026 Braise</span><span>Fraunces &amp; Inter</span></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const root=document.documentElement;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* theme */
+  try{const s=localStorage.getItem('braise-theme');if(s)root.dataset.theme=s;}catch(e){}
+  document.getElementById('theme').addEventListener('click',()=>{
+    const dark=root.dataset.theme==='dark'||(!root.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);
+    root.dataset.theme=dark?'light':'dark';
+    try{localStorage.setItem('braise-theme',root.dataset.theme);}catch(e){}
+  });
+
+  /* hero load sequence: hero already has .is-in via class; force paint then trigger */
+  const hero=document.getElementById('hero');hero.classList.remove('is-in');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>hero.classList.add('is-in')));
+
+  /* image reveal on scroll */
+  const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-in');io.unobserve(e.target);}})},{rootMargin:'0px 0px -10% 0px'});
+  document.querySelectorAll('.reveal-img').forEach(el=>io.observe(el));
+
+  /* servings */
+  const BASE=4;let serv=4;
+  const fmt=n=>{const r=Math.round(n*100)/100;return r.toLocaleString('fr-FR',{maximumFractionDigits:2});};
+  const qs=[...document.querySelectorAll('#ing .q')];
+  function render(){
+    document.getElementById('servN').textContent=serv;
+    document.getElementById('metaServ').textContent=serv;
+    qs.forEach(q=>{
+      const v=parseFloat(q.dataset.base)*serv/BASE;const unit=q.dataset.unit;
+      const span=q.firstElementChild;span.textContent=fmt(v);
+      if(unit){let u=q.querySelector('.unit');if(!u){u=document.createElement('span');u.className='unit';q.appendChild(u);}u.textContent=unit;}
+      if(!reduced){q.classList.remove('roll');void q.offsetWidth;q.classList.add('roll');}
+    });
+  }
+  render();
+  document.getElementById('minus').addEventListener('click',()=>{if(serv>1){serv--;render();}});
+  document.getElementById('plus').addEventListener('click',()=>{if(serv<16){serv++;render();}});
+
+  /* steps */
+  document.querySelectorAll('.step .check').forEach(b=>b.addEventListener('click',()=>{
+    const s=b.closest('.step');s.classList.toggle('done');b.setAttribute('aria-pressed',s.classList.contains('done'));
+  }));
+
+  /* custom select */
+  const sel=document.getElementById('unitSelect'),btn=document.getElementById('unitBtn'),list=document.getElementById('unitList'),val=document.getElementById('unitValue');
+  const open=o=>sel.setAttribute('aria-expanded',o?'true':'false');
+  btn.addEventListener('click',()=>open(sel.getAttribute('aria-expanded')!=='true'));
+  list.querySelectorAll('li').forEach(li=>li.addEventListener('click',()=>{
+    list.querySelectorAll('li').forEach(x=>x.removeAttribute('aria-selected'));li.setAttribute('aria-selected','true');val.textContent=li.dataset.v;open(false);btn.focus();
+  }));
+  document.addEventListener('click',e=>{if(!sel.contains(e.target))open(false);});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')open(false);});
+
+  /* nutrition coherence */
+  const n=[1,2,3,4].map(i=>document.getElementById('n'+i));const warn=document.getElementById('warn'),wt=document.getElementById('warnText'),fix=document.getElementById('fix');
+  function coh(){
+    const kcal=+n[0].value||0,p=+n[1].value||0,c=+n[2].value||0,f=+n[3].value||0;const est=Math.round(p*4+c*4+f*9);
+    if(!kcal){warn.style.display='none';return;}
+    const d=(kcal-est)/kcal;
+    if(Math.abs(d)>.15){warn.style.display='';wt.textContent=`Les macros donnent ${est} kcal, soit ${Math.round(Math.abs(d)*100)} % de ${d>0?'moins':'plus'} que la valeur saisie.`;fix.textContent=`Corriger à ${est}`;fix.onclick=()=>{n[0].value=est;coh();};}
+    else warn.style.display='none';
+  }
+  n.forEach(i=>i.addEventListener('input',coh));coh();
+
+  /* dietetic toggle */
+  const tg=document.getElementById('dietToggle');
+  tg.addEventListener('click',()=>tg.setAttribute('aria-checked',tg.getAttribute('aria-checked')==='true'?'false':'true'));
+
+  /* cursor */
+  if(matchMedia('(pointer:fine)').matches&&!reduced){
+    const c=document.querySelector('.cursor');let x=innerWidth/2,y=innerHeight/2,tx=x,ty=y;
+    addEventListener('mousemove',e=>{tx=e.clientX;ty=e.clientY;});
+    (function loop(){x+=(tx-x)*.35;y+=(ty-y)*.35;c.style.transform=`translate(${x}px,${y}px)`;requestAnimationFrame(loop);})();
+    document.querySelectorAll('a,button,.check').forEach(el=>{el.addEventListener('mouseenter',()=>c.classList.add('big'));el.addEventListener('mouseleave',()=>c.classList.remove('big'));});
+  }
+})();
+</script>
+</body>
+</html>
